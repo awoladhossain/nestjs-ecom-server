@@ -123,4 +123,27 @@ export class AuthService {
       refreshToken: null,
     });
   }
+
+  // refresh token
+  async refreshTokens(userId: string, refreshToken: string) {
+    const user = await this.userModel.findById(userId);
+    if (!user || !user.refreshToken)
+      throw new UnauthorizedException('Access denied');
+
+    const tokenMatch = await bcrypt.compare(refreshToken, user.refreshToken);
+    if (!tokenMatch) throw new UnauthorizedException('Access denied');
+
+    const tokens = await this.generateToken(
+      user._id.toString(),
+      user.email,
+      user.role,
+    );
+
+    const hashedRefresh = await bcrypt.hash(tokens.refreshToken, 10);
+    await this.userModel.findByIdAndUpdate(user._id, {
+      refreshToken: hashedRefresh,
+    });
+
+    return tokens;
+  }
 }
