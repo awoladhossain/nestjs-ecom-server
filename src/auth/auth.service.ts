@@ -122,6 +122,9 @@ export class AuthService {
     await this.userModel.findByIdAndUpdate(userId, {
       refreshToken: null,
     });
+    return {
+      message: 'Logout successful',
+    };
   }
 
   // refresh token
